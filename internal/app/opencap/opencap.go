@@ -4,20 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/buaazp/fasthttprouter"
+	"github.com/opencap/opencap/internal/pkg/config"
 	"github.com/opencap/opencap/internal/pkg/database"
 	"github.com/opencap/opencap/pkg/messages"
 	"github.com/valyala/fasthttp"
+	"log"
 )
 
 type Server struct {
-	db database.Database
+	db     database.Database
+	config config.Config
 }
 
 func (s *Server) SetDatabase(db database.Database) {
 	s.db = db
 }
 
-func (s *Server) Run(host string, port uint16) error {
+func (s *Server) SetConfig(config config.Config) {
+	s.config = config
+}
+
+func (s *Server) Run() error {
 	router := fasthttprouter.New()
 
 	// CAP
@@ -35,12 +42,17 @@ func (s *Server) Run(host string, port uint16) error {
 
 	router.NotFound = s.handleNotImplemented
 
-	return fasthttp.ListenAndServe(fmt.Sprintf("%s:%d", host, port), router.Handler)
+	log.Printf("Listening on %s:%d", s.config.Hostname(), s.config.Port())
+	return fasthttp.ListenAndServe(fmt.Sprintf("%s:%d", s.config.Hostname(), s.config.Port()), router.Handler)
 }
 
 func (s *Server) writeJSON(ctx *fasthttp.RequestCtx, data interface{}) {
 	enc := json.NewEncoder(ctx)
-	enc.SetIndent("", "    ")
+
+	if s.config.Debug() {
+		enc.SetIndent("", "    ")
+	}
+
 	err := enc.Encode(data)
 	if err != nil {
 		s.handleError(ctx, fasthttp.StatusInternalServerError, "Internal server error")
