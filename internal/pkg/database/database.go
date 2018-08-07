@@ -13,6 +13,7 @@ type Database interface {
 	CreateUser(domain, user, hash string) error
 	DeleteUser(domain, user string) error
 	GetUserPassword(domain, user string) (string, error)
+	Close() error
 }
 
 type Address struct {

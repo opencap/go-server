@@ -16,7 +16,7 @@ type Config interface {
 	Hostname() string
 	Port() uint16
 	Debug() bool
-	DatabaseDriver() string
+	DatabaseType() string
 	DatabaseDataSource() string
 }
 
@@ -29,7 +29,7 @@ type config struct {
 }
 
 type databaseConfig struct {
-	JDriver     string `json:"driver"`
+	JType       string `json:"type"`
 	JDataSource string `json:"dataSource"`
 }
 
@@ -45,8 +45,8 @@ func (conf *config) Debug() bool {
 	return conf.JDebug
 }
 
-func (conf *config) DatabaseDriver() string {
-	return conf.JDatabase.JDriver
+func (conf *config) DatabaseType() string {
+	return conf.JDatabase.JType
 }
 
 func (conf *config) DatabaseDataSource() string {
@@ -58,12 +58,12 @@ var defaultConfig = config{
 	JPort:  41145,
 	JDebug: false,
 	JDatabase: databaseConfig{
-		JDriver:     "sqlite3",
+		JType:       "sqlite",
 		JDataSource: "file:opencap.db",
 	},
 }
 
-func LoadConfig(path string) (*config, error) {
+func LoadConfig(path string) (Config, error) {
 	_, err := os.Stat(path)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("fileinfo for %s failed: %v", path, err)
