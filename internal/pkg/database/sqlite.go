@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/opencap/opencap/pkg/types"
+	"golang.org/x/crypto/ed25519"
 )
 
 type SQLiteDatabase struct {
@@ -159,12 +160,39 @@ func (db *SQLiteDatabase) DeleteAddress(domain, user string, typeId types.TypeId
 	return err
 }
 
-func (db *SQLiteDatabase) SetDomainPublicKey(kp interface{}) error {
-	return nil
+func (db *SQLiteDatabase) GetPublicKey(domain string) (ed25519.PublicKey, error) {
+	var publicKey []byte
+
+	row := db.db.QueryRow(`SELECT publicKey FROM domains WHERE domain = ?;`, domain)
+	if err := row.Scan(&publicKey); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return ed25519.PublicKey(publicKey), nil
 }
 
-func (db *SQLiteDatabase) GetDomainPublicKey(domain string) (interface{}, error) {
-	return nil, nil
+func (db *SQLiteDatabase) SetPublicKey(domain string, kp ed25519.PublicKey) error {
+	res, err := db.db.Exec(`UPDATE domains SET publicKey = ? WHERE domain = ?;`, domain, []byte(kp))
+	if err != nil {
+		return err
+	}
+
+	if n, err := res.RowsAffected(); err != nil {
+		return err
+	} else if n > 0 {
+		return nil
+	}
+
+	_, err = db.db.Exec(`INSERT INTO domains (domain, publicKey) VALUES (?, ?);`, domain, []byte(kp))
+	return err
+}
+
+func (db *SQLiteDatabase) DeletePublicKey(domain string) error {
+	_, err := db.db.Exec(`DELETE FROM domains WHERE domain = ?;`, domain)
+	return err
 }
 
 func (db *SQLiteDatabase) CreateUser(domain, user, hash string) error {

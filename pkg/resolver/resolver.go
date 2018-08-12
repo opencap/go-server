@@ -1,26 +1,43 @@
 package resolver
 
 import (
-	"net"
-	"fmt"
-	"regexp"
-	"golang.org/x/crypto/ed25519"
 	"encoding/hex"
+	"fmt"
+	"golang.org/x/crypto/ed25519"
+	"net"
+	"regexp"
 )
 
 const (
 	service = "opencap"
-	proto = "tcp"
+	proto   = "tcp"
 
-	keyPublicKey = "camp"
-	keyDNSSig = "dnssig"
+	keyPublicKey = "opencap_key"
+	keyDNSSig    = "opencap_dnssig"
 )
 
 var txtRegex = regexp.MustCompile("\\s*([^=]+)=([^=\\s]+)\\s*")
 
-func lookupSRV(name string) (addrs []*net.SRV, err error) {
-	_, addrs, err = net.LookupSRV(service, proto, name)
-	return
+func lookupSRV(name string) ([]*Server, error) {
+	_, srv, err := net.LookupSRV(service, proto, name)
+	if err != nil {
+		return nil, fmt.Errorf("srv lookup failed: %v", err)
+	}
+
+	l := make([]*Server, len(srv))
+	for i, e := range srv {
+		host := e.Target
+		if host[len(host)-1] == '.' {
+			host = host[:len(host)-1]
+		}
+
+		l[i] = &Server{
+			Host: host,
+			Port: e.Port,
+		}
+	}
+
+	return l, nil
 }
 
 func lookupTXT(name string) (kv map[string]string, err error) {
@@ -46,13 +63,27 @@ func lookupTXT(name string) (kv map[string]string, err error) {
 }
 
 type Result struct {
-	Servers []*net.SRV
+	name      string
+	Servers   []*Server
 	PublicKey ed25519.PublicKey
-	DNSSig bool
+	DNSSig    bool
+}
+
+func (res *Result) GetServer() (string, uint16) {
+	if len(res.Servers) == 0 {
+		return res.name, 41145
+	} else {
+		return res.Servers[0].Host, res.Servers[0].Port
+	}
+}
+
+type Server struct {
+	Host string
+	Port uint16
 }
 
 func Resolve(name string) (res *Result, err error) {
-	res = &Result{}
+	res = &Result{name: name}
 
 	res.Servers, err = lookupSRV(name)
 	if err != nil {
