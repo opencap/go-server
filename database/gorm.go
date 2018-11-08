@@ -5,7 +5,10 @@ import (
 
 	"github.com/jinzhu/gorm"
 
+	_ "github.com/jinzhu/gorm/dialects/mssql"    // This is needed for gorm to know to use microsoft sql server
+	_ "github.com/jinzhu/gorm/dialects/mysql"    // This is needed for gorm to know to use mysql
 	_ "github.com/jinzhu/gorm/dialects/postgres" // This is needed for gorm to know to use postgres
+	_ "github.com/jinzhu/gorm/dialects/sqlite"   // This is needed for gorm to know to use sqlite
 )
 
 // Gorm represents a connection to GORM

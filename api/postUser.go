@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -13,51 +12,53 @@ import (
 )
 
 type postUserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Alias              string `json:"alias"`
+	Password           string `json:"password"`
+	CreateUserPassword string `json:"create_user_password"`
 }
 
-func validatePostUserParams(req *http.Request) (postUserRequest, error) {
+func validatePostUserParams(req *http.Request) (string, string, string, string, error) {
 	params := postUserRequest{}
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		return params, errors.New("Error parsing request")
+		return "", "", "", "", errors.New("Error reading request")
 	}
 
 	err = json.Unmarshal(body, &params)
 	if err != nil {
-		return params, errors.New("Error parsing request")
+		return "", "", "", "", errors.New("Error parsing request")
 	}
 
 	if !auth.ValidatePassword(params.Password) {
-		return params, errors.New("Invalid password format, should")
+		return "", "", "", "", errors.New("Invalid password format, should")
 	}
 
-	username, valid := opencap.ValidateUsername(params.Username)
-	if !valid {
-		return params, fmt.Errorf("Invalid password format. Passwords require at least one upper case letter, at least one special character, at least one number, and must have at least %v characters total", auth.MinPasswordLength)
+	username, domain, err := opencap.ValidateAlias(params.Alias)
+	if err != nil {
+		return "", "", "", "", err
 	}
-	params.Username = username
+	params.Alias = username
 
-	return params, nil
-}
-
-func reqToUser(req postUserRequest, domain string) database.User {
-	user := database.User{}
-	user.Username = req.Username
-	user.Password = req.Password
-	user.Domain = domain
-	return user
+	return username, domain, params.Password, params.CreateUserPassword, nil
 }
 
 func (cfg config) postUserHandler(w http.ResponseWriter, req *http.Request) {
-	reqModel, err := validatePostUserParams(req)
+	username, domain, password, createUserPassword, err := validatePostUserParams(req)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	user := reqToUser(reqModel, cfg.domain)
+	if createUserPassword != cfg.createUserPassword {
+		respondWithError(w, http.StatusBadRequest, "invalid create_user_password")
+		return
+	}
+
+	user := database.User{
+		Username: username,
+		Domain:   domain,
+		Password: password,
+	}
 
 	user.Password, err = auth.HashPassword(user.Password)
 	if err != nil {

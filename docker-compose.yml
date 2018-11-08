@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 services:
   go-server:
     depends_on:
@@ -19,3 +19,6 @@ services:
       POSTGRES_DB: test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+
+  sqlite:
+    image: nouchka/sqlite3:latest

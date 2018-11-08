@@ -16,6 +16,7 @@ const serverStartupMillis = 1000
 
 const testUsername = "username"
 const testPassword = "Super@35Secure"
+const testCreateUserPassword = "somepassword"
 const testBitcoinP2PKHAddress = "1DxBaADfhTSWsevbzDghrhKSqQwsBpuM5A"
 const testDomain = "example.com"
 const TestNanoAddress = "xrb_3xnpp3eh6fhnfztx46ypubizd5q1fgds3dbbkp5ektwut3tumrykyx6u5qpd"
@@ -29,8 +30,9 @@ func TestAPISuccess(t *testing.T) {
 	// Create a user
 	url := "http://localhost:" + os.Getenv("PORT") + "/v1/users"
 	params := []byte(`{
-		"username": "` + testUsername + `",
-		"password": "` + testPassword + `"
+		"alias": "` + testUsername + `$` + testDomain + `",
+		"password": "` + testPassword + `",
+		"create_user_password": "` + testCreateUserPassword + `"
 		}`)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(params))
