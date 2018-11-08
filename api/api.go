@@ -13,10 +13,10 @@ import (
 )
 
 type config struct {
-	db                database.Database
-	jwtExpirationTime time.Duration
-	jwtSecret         string
-	domain            string
+	db                 database.Database
+	jwtExpirationTime  time.Duration
+	jwtSecret          string
+	createUserPassword string
 }
 
 func (cfg *config) initDB() error {
@@ -32,6 +32,12 @@ func (cfg *config) initDB() error {
 	var err error
 	switch dbType {
 	case "postgres":
+		cfg.db, err = database.GetGormConnection(dbURL, dbType)
+	case "sqlite3":
+		cfg.db, err = database.GetGormConnection(dbURL, dbType)
+	case "mssql":
+		cfg.db, err = database.GetGormConnection(dbURL, dbType)
+	case "mysql":
 		cfg.db, err = database.GetGormConnection(dbURL, dbType)
 	default:
 		err = errors.New("Invalid DB_TYPE specified in env")
@@ -49,7 +55,7 @@ func (cfg *config) initDB() error {
 	return nil
 }
 
-func (cfg *config) initAuth() error {
+func (cfg *config) intJWTConfig() error {
 	jwtExpirationMinutesString := os.Getenv("JWT_EXPIRATION_MINUTES")
 	jwtExpirationMinutes, err := strconv.Atoi(jwtExpirationMinutesString)
 	if err != nil || jwtExpirationMinutes < 1 {
@@ -64,10 +70,11 @@ func (cfg *config) initAuth() error {
 	return nil
 }
 
-func (cfg *config) initDomain() error {
-	cfg.domain = os.Getenv("DOMAIN")
-	if len(cfg.domain) < 1 {
-		return errors.New("DOMAIN is missing from env")
+func (cfg *config) initAuthPassword() error {
+	cfg.createUserPassword = os.Getenv("CREATE_USER_PASSWORD")
+	const minLength = 8
+	if len(cfg.createUserPassword) < minLength {
+		return errors.New("CREATE_USER_PASSWORD must be longer than " + string(minLength) + " characters")
 	}
 	return nil
 }
@@ -79,11 +86,11 @@ func Start() *http.Server {
 	if err != nil {
 		panic(err.Error())
 	}
-	err = cfg.initAuth()
+	err = cfg.intJWTConfig()
 	if err != nil {
 		panic(err.Error())
 	}
-	err = cfg.initDomain()
+	err = cfg.initAuthPassword()
 	if err != nil {
 		panic(err.Error())
 	}
