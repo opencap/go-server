@@ -1,4 +1,4 @@
-# go-opencap
+# go-server
 
 Basic OpenCAP server written in Go. Supports "Address Query" and "Alias Management"
 
