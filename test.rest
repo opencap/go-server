@@ -1,4 +1,4 @@
-POST http://localhost:8080/v1/users HTTP/1.1
+POST http://66.219.198.205:443/v1/users HTTP/1.1
 content-type: application/json
 
 {
@@ -9,7 +9,7 @@ content-type: application/json
 
 ###
 
-POST http://localhost:8080/v1/auth HTTP/1.1
+POST http://66.219.198.205:443/v1/auth HTTP/1.1
 content-type: application/json
 
 {
@@ -19,9 +19,9 @@ content-type: application/json
 
 ###
 
-PUT http://localhost:8080/v1/addresses HTTP/1.1
+PUT http://66.219.198.205:443/v1/addresses HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb21haW4iOiJleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoibGFuZSIsImV4cCI6MTU0MTY4NzY2MywiaWF0IjoxNTQxNjg1ODYzLCJpc3MiOiJleGFtcGxlLmNvbSJ9.6oyUYpn0Ixfy7uRWOOeZjf-YYHtP7xvvZs_QrWIfd5U
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb21haW4iOiJleGFtcGxlLmNvbSIsInVzZXJuYW1lIjoibGFuZSIsImV4cCI6MTU0MzQ1NjIzMywiaWF0IjoxNTQzNDU0NDMzLCJpc3MiOiJleGFtcGxlLmNvbSJ9.7zfcGbeHLW7QYjLF9kIMrWDBr_kWYuUQDp-rw9-NIAQ
 
 {
     "address_type": 300,
@@ -30,4 +30,4 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb21haW4iOiJleGFtc
 
 ###
 
-http://localhost:8080/v1/addresses?alias=lane$example.com&address_type=300
+http://66.219.198.205:443/v1/addresses?alias=lane$example.com&address_type=300

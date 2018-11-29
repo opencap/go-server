@@ -1,5 +1,6 @@
 .env
-
+*.rest
 go-server
+go-server.exe
 test.db
 /test.db

@@ -130,7 +130,7 @@ func Start() *http.Server {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {
-			panic(err.Error())
+			fmt.Println(err.Error())
 		}
 	}()
 
