@@ -64,7 +64,7 @@ func reqToAddress(req putAddressRequest) database.Address {
 	return address
 }
 
-func (cfg config) putAddressHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg Config) putAddressHandler(w http.ResponseWriter, req *http.Request) {
 	reqModel, err := validatePutAddressParams(req)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())

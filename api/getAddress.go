@@ -61,7 +61,7 @@ func validateGetAddressParams(req *http.Request) (string, string, int, error) {
 	return username, domain, addressTypeInt, nil
 }
 
-func (cfg config) getAddressHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg Config) getAddressHandler(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	username, domain, addressType, err := validateGetAddressParams(req)
 	if err != nil {

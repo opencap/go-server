@@ -24,7 +24,7 @@ func validateDeleteAddressParams(req *http.Request) (int, error) {
 	return addressTypeInt, nil
 }
 
-func (cfg config) deleteAddressesHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg Config) deleteAddressesHandler(w http.ResponseWriter, req *http.Request) {
 	addressType, err := validateDeleteAddressParams(req)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())

@@ -6,7 +6,7 @@ import (
 	"github.com/opencap/go-server/auth"
 )
 
-func (cfg config) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg Config) deleteUserHandler(w http.ResponseWriter, req *http.Request) {
 	domain, username, err := auth.Authorize(req.Header, cfg.jwtSecret)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())

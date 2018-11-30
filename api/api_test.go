@@ -16,7 +16,7 @@ const serverStartupMillis = 1000
 
 const testUsername = "username"
 const testPassword = "Super@35Secure"
-const testCreateUserPassword = "somepassword"
+const testCreateUserPassword = "examplepassword"
 const testBitcoinP2PKHAddress = "1DxBaADfhTSWsevbzDghrhKSqQwsBpuM5A"
 const testDomain = "example.com"
 const TestNanoAddress = "xrb_3xnpp3eh6fhnfztx46ypubizd5q1fgds3dbbkp5ektwut3tumrykyx6u5qpd"
@@ -24,11 +24,14 @@ const TestNanoAddress = "xrb_3xnpp3eh6fhnfztx46ypubizd5q1fgds3dbbkp5ektwut3tumry
 func TestAPISuccess(t *testing.T) {
 	server := Start()
 	defer server.Shutdown(nil)
+	cfg := Config{}
+	err := cfg.SetupDB()
+	assert.Nil(t, err)
 
 	time.Sleep(serverStartupMillis * time.Millisecond) //wait for server to start
 
 	// Create a user
-	url := "http://localhost:" + os.Getenv("PORT") + "/v1/users"
+	url := "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/users"
 	params := []byte(`{
 		"alias": "` + testUsername + `$` + testDomain + `",
 		"password": "` + testPassword + `",
@@ -48,7 +51,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Login to that user
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/auth"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/auth"
 	params = []byte(`{
 		"alias": "` + testUsername + "$" + testDomain + `",
 		"password": "` + testPassword + `"
@@ -69,7 +72,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Add a Bitcoin address
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses"
 	params = []byte(`{
 		"address_type": 100,
 		"address": "` + testBitcoinP2PKHAddress + `"
@@ -88,7 +91,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Add a Nano address
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses"
 	params = []byte(`{
 		"address_type": 300,
 		"address": "` + TestNanoAddress + `"
@@ -107,7 +110,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Get an address
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses?alias=" + testUsername + "$" + testDomain + "&address_type=100"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses?alias=" + testUsername + "$" + testDomain + "&address_type=100"
 	req, err = http.NewRequest("GET", url, bytes.NewBuffer(params))
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -120,7 +123,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Get addresses
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses?alias=" + testUsername + "$" + testDomain
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses?alias=" + testUsername + "$" + testDomain
 	req, err = http.NewRequest("GET", url, bytes.NewBuffer(params))
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -135,7 +138,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.True(t, len(body) > 0)
 
 	// Delete an address
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses/100"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses/100"
 	req, err = http.NewRequest("DELETE", url, bytes.NewBuffer(params))
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -147,7 +150,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 
 	// Delete an address
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses/300"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses/300"
 	req, err = http.NewRequest("DELETE", url, bytes.NewBuffer(params))
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -161,7 +164,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Get address and fail
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/addresses?alias=" + testUsername + "$" + testDomain + "&address_type=100"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/addresses?alias=" + testUsername + "$" + testDomain + "&address_type=100"
 	req, err = http.NewRequest("GET", url, bytes.NewBuffer(params))
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -171,7 +174,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Equal(t, 404, resp.StatusCode)
 
 	// Delete the user
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/users"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/users"
 	req, err = http.NewRequest("DELETE", url, bytes.NewBuffer(params))
 	assert.Nil(t, err)
 	req.Header.Set("Content-Type", "application/json")
@@ -185,7 +188,7 @@ func TestAPISuccess(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Fail the login
-	url = "http://localhost:" + os.Getenv("PORT") + "/v1/auth"
+	url = "http://127.0.0.1:" + os.Getenv("PORT") + "/v1/auth"
 	params = []byte(`{
 		"alias": "` + testUsername + "$" + testDomain + `",
 		"password": "` + testPassword + `"
