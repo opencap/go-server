@@ -42,10 +42,15 @@ func validatePostUserParams(req *http.Request) (string, string, string, string, 
 	return username, domain, params.Password, params.CreateUserPassword, nil
 }
 
-func (cfg config) postUserHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg Config) postUserHandler(w http.ResponseWriter, req *http.Request) {
 	username, domain, password, createUserPassword, err := validatePostUserParams(req)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if domain != cfg.domainName {
+		respondWithError(w, http.StatusBadRequest, "Alias must use $"+cfg.domainName)
 		return
 	}
 

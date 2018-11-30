@@ -37,7 +37,7 @@ func validatePostAuthParams(req *http.Request) (string, string, string, error) {
 }
 
 // Handler for postAuth
-func (cfg config) postAuthHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg Config) postAuthHandler(w http.ResponseWriter, req *http.Request) {
 	username, domain, password, err := validatePostAuthParams(req)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())

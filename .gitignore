@@ -1,5 +1,7 @@
 .env
-
+*.rest
 go-server
-test.db
-/test.db
+go-server.exe
+*.db
+/*.db
+certs/

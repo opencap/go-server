@@ -1,25 +1,32 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
+	opencap "github.com/opencap/go-opencap"
 	"github.com/opencap/go-server/database"
+	"golang.org/x/crypto/acme/autocert"
 )
 
-type config struct {
+// Config represents the configuration of this API
+type Config struct {
 	db                 database.Database
 	jwtExpirationTime  time.Duration
 	jwtSecret          string
 	createUserPassword string
+	domainName         string
 }
 
-func (cfg *config) initDB() error {
+// InitDB get a connection to the database
+func (cfg *Config) InitDB() error {
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		return errors.New("No DB_URL found in env")
@@ -46,16 +53,18 @@ func (cfg *config) initDB() error {
 		return err
 	}
 
-	if os.Getenv("PLATFORM_ENV") == "test" {
-		cfg.db.CreateTables(true)
-	} else {
-		cfg.db.CreateTables(false)
-	}
-
 	return nil
 }
 
-func (cfg *config) intJWTConfig() error {
+// SetupDB setup the database for the first time
+func (cfg *Config) SetupDB() error {
+	if os.Getenv("PLATFORM_ENV") == "prod" {
+		return cfg.db.CreateTables(false)
+	}
+	return cfg.db.CreateTables(true)
+}
+
+func (cfg *Config) intJWTConfig() error {
 	jwtExpirationMinutesString := os.Getenv("JWT_EXPIRATION_MINUTES")
 	jwtExpirationMinutes, err := strconv.Atoi(jwtExpirationMinutesString)
 	if err != nil || jwtExpirationMinutes < 1 {
@@ -70,7 +79,7 @@ func (cfg *config) intJWTConfig() error {
 	return nil
 }
 
-func (cfg *config) initAuthPassword() error {
+func (cfg *Config) initAuthPassword() error {
 	cfg.createUserPassword = os.Getenv("CREATE_USER_PASSWORD")
 	const minLength = 8
 	if len(cfg.createUserPassword) < minLength {
@@ -79,61 +88,72 @@ func (cfg *config) initAuthPassword() error {
 	return nil
 }
 
+func (cfg *Config) initDomainName() error {
+	cfg.domainName = os.Getenv("DOMAIN_NAME")
+	if !opencap.ValidateDomain(cfg.domainName) {
+		return errors.New("Invalid DOMAIN_NAME in .env")
+	}
+	return nil
+}
+
 // Start begins serving the API
 func Start() *http.Server {
-	cfg := config{}
-	err := cfg.initDB()
-	if err != nil {
-		panic(err.Error())
+	cfg := Config{}
+	if err := cfg.InitDB(); err != nil {
+		log.Fatal(err.Error())
 	}
-	err = cfg.intJWTConfig()
-	if err != nil {
-		panic(err.Error())
+	if !cfg.db.HasTables() {
+		log.Fatal("Database not setup. Please use the \"--setupdatabase\" option")
 	}
-	err = cfg.initAuthPassword()
-	if err != nil {
-		panic(err.Error())
+	if err := cfg.intJWTConfig(); err != nil {
+		log.Fatal(err.Error())
+	}
+	if err := cfg.initAuthPassword(); err != nil {
+		log.Fatal(err.Error())
+	}
+	if err := cfg.initDomainName(); err != nil {
+		log.Fatal(err.Error())
 	}
 
 	r := mux.NewRouter()
-
-	// CAP
 	r.HandleFunc("/v1/addresses", cfg.getAddressHandler).Methods("GET")
-
-	// CAMP
 	r.HandleFunc("/v1/auth", cfg.postAuthHandler).Methods("POST")
 	r.HandleFunc("/v1/addresses", cfg.putAddressHandler).Methods("PUT")
 	r.HandleFunc("/v1/users", cfg.deleteUserHandler).Methods("DELETE")
 	r.HandleFunc("/v1/addresses/{address_type}", cfg.deleteAddressesHandler).Methods("DELETE")
 	r.HandleFunc("/v1/users", cfg.postUserHandler).Methods("POST")
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		panic("No PORT specified in the environment")
-	}
-	timeoutSecondsString := os.Getenv("TIMEOUT_SECONDS")
-	if timeoutSecondsString == "" {
-		panic("No TIMEOUT_SECONDS specified in the environment")
-	}
-	timeoutSeconds, err := strconv.Atoi(timeoutSecondsString)
-	if err != nil {
-		panic("TIMEOUT_SECONDS must be an integer")
-	}
-
-	server := &http.Server{
-		Addr:         ":" + port,
-		WriteTimeout: time.Second * time.Duration(timeoutSeconds),
-		ReadTimeout:  time.Second * time.Duration(timeoutSeconds),
-		IdleTimeout:  time.Second * time.Duration(timeoutSeconds),
-		Handler:      r,
-	}
-
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			panic(err.Error())
+	if os.Getenv("PLATFORM_ENV") == "prod" {
+		hostPolicy := func(ctx context.Context, host string) error {
+			allowedHost := cfg.domainName
+			if host == allowedHost {
+				return nil
+			}
+			return fmt.Errorf("acme/autocert: only %s host is allowed", allowedHost)
 		}
-	}()
+		certManager := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: hostPolicy,
+			Cache:      autocert.DirCache("certs"),
+		}
 
-	fmt.Println("Listening for requests on " + server.Addr)
-	return server
+		http.Handle("/", r)
+		go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
+		go http.Serve(certManager.Listener(), nil)
+		fmt.Println("Production OpenCAP server started successfully")
+		return &http.Server{} // Don't use a server struct for production
+	}
+
+	testPort := os.Getenv("TEST_PORT")
+	if testPort == "" {
+		log.Fatal("No PORT specified in the environment")
+	}
+	server := http.Server{
+		Addr:    ":" + testPort,
+		Handler: r,
+	}
+	go server.ListenAndServe()
+
+	fmt.Println("Listening for requests on localhost:" + testPort)
+	return &server
 }
