@@ -181,13 +181,13 @@ You may also need to make sure that windows (or another operating system's) fire
 Once it is up and running, you can create users by making requests of the following format:
 
 ```json
-POST https://myserver.com/v1/users
+POST https://example.com/v1/users
 content-type: application/json
 
 {
     "alias": "username$myserver.com",
     "password": "myNewUserPassword",
-    "create_user_password": "somepassword" // same password used in .env file
+    "create_user_password": "somepassword"
 }
 ```
 
