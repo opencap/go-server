@@ -1,33 +1,65 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
-	"strconv"
+
+	"github.com/opencap/go-server/configure"
 
 	"github.com/joho/godotenv"
 	"github.com/opencap/go-server/api"
-	portforward "github.com/opencap/go-server/port-forward"
 )
 
 func main() {
 	godotenv.Load()
 
-	portString := os.Getenv("PORT")
-	port, err := strconv.Atoi(portString)
-	if err != nil || port < 1 {
-		fmt.Println("PORT must be greater than 0")
-		os.Exit(1)
+	openPort := flag.String("openport", "", "Open the PORT from your router to this device")
+	closePort := flag.String("closeport", "", "Close the PORT from your router to this device")
+	getIP := flag.Bool("getip", false, "Print out the public IP address of this machine")
+	setupDatabase := flag.Bool("setupdatabase", false, "Setup the database for the first time")
+	flag.Parse()
+
+	if *openPort != "" {
+		err := configure.OpenPort(*openPort)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		fmt.Printf("Port %v forwarded successfully", *openPort)
+		os.Exit(0)
 	}
 
-	ip, err := portforward.Open(uint16(port))
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("Opened port " + string(port) + " with ip " + ip)
+	if *closePort != "" {
+		err := configure.ClosePort(*closePort)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		fmt.Printf("Port %v closed successfully", *closePort)
+		os.Exit(0)
 	}
-	defer portforward.Close(uint16(port))
+
+	if *getIP {
+		ip, err := configure.GetPublicIP()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		fmt.Println("Your IP address is: " + ip)
+		os.Exit(0)
+	}
+
+	if *setupDatabase {
+		cfg := api.Config{}
+		if err := cfg.InitDB(); err != nil {
+			log.Fatal(err.Error())
+		}
+		if err := cfg.SetupDB(); err != nil {
+			log.Fatal(err.Error())
+		}
+		fmt.Println("Database has been setup correctly")
+		os.Exit(0)
+	}
 
 	server := api.Start()
 	defer server.Shutdown(nil)

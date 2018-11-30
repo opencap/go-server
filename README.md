@@ -23,13 +23,13 @@ PORT=443
 DB_URL=database.db
 DB_TYPE=sqlite3
 JWT_EXPIRATION_MINUTES=30
-JWT_SECRET=somesupersecret
+JWT_SECRET=FSHDFKSDHFSDLFABSDJFLSDFSDFJSLDFBASDFBDSJFSHDFASDKFJSLDKFALSDFKJADFKASDFD
 PLATFORM_ENV=prod
 TIMEOUT_SECONDS=30
 CREATE_USER_PASSWORD=somepassword
 ```
 
-The above configuration will work if you are planning on using sqlite as a database. However be sure to change CREATE_USER_PASSWORD and JWT_SECRET for security puposes. PORT must be 443 for running in producion.
+The above configuration will work if you are planning on using sqlite as a database. However be sure to change CREATE_USER_PASSWORD and JWT_SECRET for security puposes. PORT must be set to 443 for running in producion.
 
 ### Install sqlite3
 
@@ -38,17 +38,23 @@ sudo apt-get update.
 sudo apt-get install sqlite3 libsqlite3-dev
 ```
 
+### HTTPS/TLS
+
+Upon startup the server will check for two files, "cert.pem" and "key.pem" in the same directory as the executable. If they are not found it will generate new certificates so that it can serve using HTTPS/TLS.
+
+### Port Forwarding
+
+If you are running the server on a computer that is connected to the internet via a home router, the router must forward the PORT to the computer. On startup the server tries to do this automatically using uPnP (Universal plug n play). If it is unable to do so it will print an error message. Make sure that your router is upgraded to the latest version of its firmware, that the go-server application has proper permissions from your firewall, and that uPnP is enabled on your router.
+
+Port forwarding can also be done manually if that is easier for you.
+
 ### Run the server
 
-Make sure you are in the directory containing the binary and you can start the server using ./go-server
-
-### Add SSL
-
-OpenCAP requires that a server use SSL. For free certificates and tutorials see https://letsencrypt.org/
+Make sure you are in the directory containing the executable and you can start the server using ./go-server
 
 ### Add DNS Records
 
-You will need to setup your server with a domain name that you own. There are many tutorials online of how to do this step.
+You will need to setup your server with a domain name that you own. There are many tutorials online of how to do this step, but basically you log into your DNS providers website and add an A record to your domain name that points to your computer's IP address.
 
 You will also need to add a SRV record that points to the domain of your server. The SRV record should have the following information:
 

@@ -31,18 +31,42 @@ func GetGormConnection(dbURL, dbType string) (Gorm, error) {
 	return Gorm{connection: db}, nil
 }
 
+// HasTables alerts us if the tables haven't been setup yet
+func (g Gorm) HasTables() bool {
+	if !g.connection.HasTable(&User{}) {
+		return false
+	}
+	if !g.connection.HasTable(&Address{}) {
+		return false
+	}
+	return true
+}
+
 // CreateTables creates the necessary tables
-func (g Gorm) CreateTables(recreate bool) {
+func (g Gorm) CreateTables(recreate bool) error {
 	if recreate {
-		g.connection.DropTableIfExists(&User{})
-		g.connection.DropTableIfExists(&Address{})
+		if dbc := g.connection.DropTableIfExists(&User{}); dbc.Error != nil {
+			return dbc.Error
+		}
+		if dbc := g.connection.DropTableIfExists(&Address{}); dbc.Error != nil {
+			return dbc.Error
+		}
 	}
 
-	g.connection.CreateTable(&User{})
-	g.connection.CreateTable(&Address{})
+	if dbc := g.connection.CreateTable(&User{}); dbc.Error != nil {
+		return dbc.Error
+	}
+	if dbc := g.connection.CreateTable(&Address{}); dbc.Error != nil {
+		return dbc.Error
+	}
 
-	g.connection.AutoMigrate(&User{})
-	g.connection.AutoMigrate(&Address{})
+	if dbc := g.connection.AutoMigrate(&User{}); dbc.Error != nil {
+		return dbc.Error
+	}
+	if dbc := g.connection.AutoMigrate(&Address{}); dbc.Error != nil {
+		return dbc.Error
+	}
+	return nil
 }
 
 // CreateUser creates a user in the database
