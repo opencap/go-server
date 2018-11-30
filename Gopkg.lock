@@ -2,16 +2,49 @@
 
 
 [[projects]]
+  name = "cloud.google.com/go"
+  packages = ["civil"]
+  revision = "74b12019e2aa53ec27882158f59192d7cd6d1998"
+  version = "v0.33.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/NebulousLabs/go-upnp"
+  packages = ["."]
+  revision = "3a71999ed0d393fba27f9c9b54f25a0943af97af"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/denisenkom/go-mssqldb"
+  packages = [
+    ".",
+    "internal/cp"
+  ]
+  revision = "4e0d7dc8888fbb59764060e99b7b68e77a6f9698"
+
+[[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
   revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
   version = "v3.2.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/glendc/go-external-ip"
+  packages = ["."]
+  revision = "139229dcdddd5ad18f5c4912fcb905a4079e2a36"
+
+[[projects]]
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  revision = "72cd26f257d44c1114970e19afddcd812016007e"
+  version = "v1.4.1"
 
 [[projects]]
   name = "github.com/gorilla/context"
@@ -29,16 +62,25 @@
   name = "github.com/jinzhu/gorm"
   packages = [
     ".",
-    "dialects/postgres"
+    "dialects/mssql",
+    "dialects/mysql",
+    "dialects/postgres",
+    "dialects/sqlite"
   ]
-  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
-  version = "v1.9.1"
+  revision = "472c70caa40267cb89fd8facb07fe6454b578626"
+  version = "v1.9.2"
 
 [[projects]]
   branch = "master"
   name = "github.com/jinzhu/inflection"
   packages = ["."]
   revision = "04140366298a54a039076d798123ffa108fff46c"
+
+[[projects]]
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/lib/pq"
@@ -51,14 +93,20 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "c7c4067b79cc51e6dfdcef5c702e74b1e0fa7c75"
+  version = "v1.10.0"
+
+[[projects]]
   name = "github.com/opencap/go-opencap"
   packages = [
     ".",
     "bitcoin",
     "nano"
   ]
-  revision = "a9e67b6fc5d24fd74326763511e421da4c0d7dae"
+  revision = "b200cdc038849d9f37cad69da7bb80d9306f9de9"
+  version = "v0.2.0"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -74,16 +122,85 @@
 
 [[projects]]
   branch = "master"
+  name = "gitlab.com/NebulousLabs/fastrand"
+  packages = ["."]
+  revision = "603482d69e405db4890e654c9807b4c772e86c81"
+
+[[projects]]
+  branch = "master"
+  name = "gitlab.com/NebulousLabs/go-upnp"
+  packages = [
+    "goupnp",
+    "goupnp/dcps/internetgateway1",
+    "goupnp/httpu",
+    "goupnp/scpd",
+    "goupnp/soap",
+    "goupnp/ssdp"
+  ]
+  revision = "3a71999ed0d393fba27f9c9b54f25a0943af97af"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = [
+    "acme",
+    "acme/autocert",
     "bcrypt",
-    "blowfish"
+    "blake2b",
+    "blowfish",
+    "md4"
   ]
-  revision = "5295e8364332db77d75fce11f1d19c053919a9c9"
+  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = [
+    "html",
+    "html/atom",
+    "html/charset"
+  ]
+  revision = "fae4c4e3ad76c295c3d6d259f898136b4bf833a8"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["cpu"]
+  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+
+[[projects]]
+  name = "golang.org/x/text"
+  packages = [
+    "encoding",
+    "encoding/charmap",
+    "encoding/htmlindex",
+    "encoding/internal",
+    "encoding/internal/identifier",
+    "encoding/japanese",
+    "encoding/korean",
+    "encoding/simplifiedchinese",
+    "encoding/traditionalchinese",
+    "encoding/unicode",
+    "internal/gen",
+    "internal/tag",
+    "internal/utf8internal",
+    "language",
+    "runes",
+    "transform",
+    "unicode/cldr"
+  ]
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
+
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  revision = "4a4468ece617fc8205e99368fa2200e9d1fad421"
+  version = "v1.3.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "aa22c18a2b9e9469ae248497ca9fcab2200e6197e38f18e8768bb17a8e7f63f0"
+  inputs-digest = "8cb6aa02c07c9a8960c9954b8aebfd45e08430541099b4264d61600ce759c9ef"
   solver-name = "gps-cdcl"
   solver-version = 1
