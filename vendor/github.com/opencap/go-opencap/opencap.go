@@ -38,15 +38,14 @@ func GetHost(domain string) (string, error) {
 }
 
 // ValidateUsername returns true if string is a valid username format
-func ValidateUsername(username string) (string, bool) {
-	username = strings.ToLower(username)
+func ValidateUsername(username string) bool {
 	Re := regexp.MustCompile(
 		fmt.Sprintf(`^[a-z0-9._-]{%v,%v}$`,
 			MinUsernameLength,
 			MaxUsernameLength,
 		),
 	)
-	return username, Re.MatchString(username)
+	return Re.MatchString(username)
 }
 
 // ValidateDomain returns true if string is a valid domain format
@@ -62,17 +61,15 @@ func ValidateAlias(alias string) (string, string, error) {
 	if len(parts) != 2 {
 		return "", "", errors.New("Incorrect alias format")
 	}
-	username := parts[0]
-	domain := parts[1]
 
-	username, valid := ValidateUsername(username)
+	valid := ValidateUsername(parts[0])
 	if !valid {
 		return "", "", errors.New("Invalid username format")
 	}
 
-	if !ValidateDomain(domain) {
+	if !ValidateDomain(parts[1]) {
 		return "", "", errors.New("Invalid domain format")
 	}
 
-	return username, domain, nil
+	return parts[0], parts[1], nil
 }
