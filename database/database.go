@@ -29,6 +29,7 @@ type Address struct {
 // Database represents the functionality that any peristance layer for this
 // server must satisfy
 type Database interface {
+	Close() error
 	CreateTables(bool) error
 	HasTables() bool
 	CreateUser(*User) error

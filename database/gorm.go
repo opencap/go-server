@@ -31,6 +31,10 @@ func GetGormConnection(dbURL, dbType string) (Gorm, error) {
 	return Gorm{connection: db}, nil
 }
 
+func (g Gorm) Close() error {
+	return g.connection.Close()
+}
+
 // HasTables alerts us if the tables haven't been setup yet
 func (g Gorm) HasTables() bool {
 	if !g.connection.HasTable(&User{}) {
